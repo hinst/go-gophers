@@ -3,6 +3,7 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"io"
 	"os"
 	"strings"
@@ -14,6 +15,13 @@ func ReadJsonFile[T any](filePath string, receiver T) T {
 	var file = AssertResultError(os.Open(filePath))
 	defer IoCloseSilently(file)
 	AssertError(json.NewDecoder(file).Decode(receiver))
+	return receiver
+}
+
+func ReadXmlFile[T any](filePath string, receiver T) T {
+	var file = AssertResultError(os.Open(filePath))
+	defer IoCloseSilently(file)
+	AssertError(xml.NewDecoder(file).Decode(receiver))
 	return receiver
 }
 
