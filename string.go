@@ -8,38 +8,38 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-func getIntFromString(text string) int {
+func GetIntFromString(text string) int {
 	return AssertResultError(strconv.Atoi(text))
 }
 
-func getInt32FromString(text string) int32 {
+func GetInt32FromString(text string) int32 {
 	return int32(AssertResultError(strconv.ParseInt(text, 10, 32)))
 }
 
-func getInt64FromString(text string) int64 {
+func GetInt64FromString(text string) int64 {
 	return AssertResultError(strconv.ParseInt(text, 10, 64))
 }
 
-func getStringFromInt64(number int64) string {
+func GetStringFromInt64(number int64) string {
 	return strconv.FormatInt(number, 10)
 }
 
-func getStringFromInt(number int) string {
+func GetStringFromInt(number int) string {
 	return strconv.Itoa(number)
 }
 
-func getStringFromBool(value bool) string {
+func GetStringFromBool(value bool) string {
 	if value {
 		return "true"
 	}
 	return "false"
 }
 
-func getQuotedString(text string) string {
+func GetQuotedString(text string) string {
 	return "\"" + text + "\""
 }
 
-func requireEnvVar(name string) string {
+func RequireEnvVar(name string) string {
 	var value = os.Getenv(name)
 	if value == "" {
 		log.Fatalln("Environment variable is required:", name)
@@ -47,7 +47,7 @@ func requireEnvVar(name string) string {
 	return value
 }
 
-func readEnvVar(name string, defaultValue string) string {
+func ReadEnvVar(name string, defaultValue string) string {
 	var value = os.Getenv(name)
 	if value == "" {
 		return defaultValue
@@ -55,6 +55,6 @@ func readEnvVar(name string, defaultValue string) string {
 	return value
 }
 
-func normalizeString(text string) string {
+func NormalizeString(text string) string {
 	return norm.NFC.String(text)
 }
