@@ -1,4 +1,4 @@
-package common
+package gophers
 
 // Panic if error is present
 func AssertError(e error) {

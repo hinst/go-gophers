@@ -1,4 +1,4 @@
-module github.com/hinst/go-common
+module github.com/hinst/go-gophers
 
 go 1.26
 

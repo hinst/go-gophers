@@ -1,4 +1,4 @@
-package common
+package gophers
 
 import (
 	"encoding/xml"
