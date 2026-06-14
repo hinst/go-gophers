@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hinst/go-common/file_mode"
+	"github.com/hinst/go-gophers/file_mode"
 )
 
 func ReadJsonFile[T any](filePath string, receiver T) T {
