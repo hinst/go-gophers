@@ -61,10 +61,18 @@ func (me WebRetry) Run(client *http.Client, request *http.Request) (*http.Respon
 		}
 		var isLastAttempt = attempt == me.GetAttemptLimit()-1
 		if !isLastAttempt {
-			time.Sleep(me.GetDelay())
+			time.Sleep(me.GetCurrentDelay(attempt))
 		}
 	}
 	return nil, latestError
+}
+
+func (me WebRetry) GetCurrentDelay(attempt int) time.Duration {
+	var delay = me.GetDelay()
+	for i := 0; i < attempt; i++ {
+		delay *= 2
+	}
+	return delay
 }
 
 func (me WebRetry) GetDelay() time.Duration {
