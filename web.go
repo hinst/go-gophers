@@ -69,7 +69,7 @@ func (me WebRetry) Run(client *http.Client, request *http.Request) (*http.Respon
 
 func (me WebRetry) GetCurrentDelay(attempt int) time.Duration {
 	var delay = me.GetDelay()
-	for i := 0; i < attempt; i++ {
+	for range attempt {
 		delay *= 2
 	}
 	return delay
