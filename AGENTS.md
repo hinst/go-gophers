@@ -1,0 +1,1 @@
+Code style: use `var` keyword.
