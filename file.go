@@ -35,16 +35,16 @@ func ReadBytesFile(filePath string) []byte {
 }
 
 func WriteBytesFile(filePath string, data []byte) {
-	AssertError(os.WriteFile(filePath, data, file_mode.OS_USER_RW))
+	AssertError(os.WriteFile(filePath, data, file_mode.USER_RW))
 }
 
 func WriteJsonFile[T any](filePath string, data T) {
 	var jsonBytes = AssertResultError(json.Marshal(data))
-	AssertError(os.WriteFile(filePath, jsonBytes, file_mode.OS_USER_RW))
+	AssertError(os.WriteFile(filePath, jsonBytes, file_mode.USER_RW))
 }
 
 func WriteTextFile(filePath string, text string) {
-	AssertError(os.WriteFile(filePath, []byte(text), file_mode.OS_USER_RW))
+	AssertError(os.WriteFile(filePath, []byte(text), file_mode.USER_RW))
 }
 
 func CheckFileExists(filePath string) bool {
