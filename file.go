@@ -39,7 +39,8 @@ func WriteBytesFile(filePath string, data []byte) {
 }
 
 func WriteJsonFile[T any](filePath string, data T) {
-	var jsonBytes = AssertResultError(json.Marshal(data))
+	var jsonBytes = AssertResultError(json.MarshalIndent(data, "", "\t"))
+	jsonBytes = append(jsonBytes, '\n')
 	AssertError(os.WriteFile(filePath, jsonBytes, file_mode.USER_RW))
 }
 
