@@ -20,6 +20,14 @@ func GetInt64FromString(text string) int64 {
 	return AssertResultError(strconv.ParseInt(text, 10, 64))
 }
 
+func GetInt64FromStringOptional(text string) *int64 {
+	if text == "" {
+		return nil
+	}
+	var value = GetInt64FromString(text)
+	return &value
+}
+
 func GetStringFromInt64(number int64) string {
 	return strconv.FormatInt(number, 10)
 }
