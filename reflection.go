@@ -9,8 +9,7 @@ import (
 // ErrFieldNotFound is returned when a requested field does not exist in the struct
 var ErrFieldNotFound = errors.New("Fields not found")
 
-// Returns the supplied type with all pointer indirections removed
-func derefType(theType reflect.Type) reflect.Type {
+func unwrapPointerType(theType reflect.Type) reflect.Type {
 	for theType.Kind() == reflect.Pointer {
 		theType = theType.Elem()
 	}
@@ -19,7 +18,7 @@ func derefType(theType reflect.Type) reflect.Type {
 
 // Get names of all fields in the supplied struct type
 func GetFieldNames[T any]() []string {
-	var theType = derefType(reflect.TypeFor[T]())
+	var theType = unwrapPointerType(reflect.TypeFor[T]())
 	var names = make([]string, theType.NumField())
 	for i := 0; i < theType.NumField(); i++ {
 		names[i] = theType.Field(i).Name
@@ -31,7 +30,7 @@ func GetFieldNames[T any]() []string {
 // Returns an error if any of the supplied names is not a field of the struct;
 // values for missing fields are returned as nil
 func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
-	var theType = derefType(reflect.TypeOf(s))
+	var theType = unwrapPointerType(reflect.TypeOf(s))
 	var val = reflect.ValueOf(s)
 	for val.Kind() == reflect.Pointer {
 		val = val.Elem()
@@ -54,7 +53,7 @@ func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
 
 // Get names of fields in the supplied struct type marked with tagName:"tagValue"
 func GetFieldNamesByTag[T any](tagName, tagValue string) []string {
-	var theType = derefType(reflect.TypeFor[T]())
+	var theType = unwrapPointerType(reflect.TypeFor[T]())
 	var names []string
 	for field := range theType.Fields() {
 		var field = field
