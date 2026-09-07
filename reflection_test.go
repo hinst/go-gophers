@@ -21,6 +21,47 @@ func TestGetFieldNames(t *testing.T) {
 	}
 }
 
+func TestGetFieldValuesByNames(t *testing.T) {
+	s := testStruct{
+		Alpha:   1,
+		Beta:    "two",
+		Gamma:   3.5,
+		Delta:   []byte{4, 5, 6},
+		Epsilon: "five",
+	}
+	var want = []any{1, "two", 3.5, []byte{4, 5, 6}, "five"}
+	var got = GetFieldValuesByNames(s, []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"})
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldValuesByNames() = %v, want %v", got, want)
+	}
+}
+
+func TestGetFieldValuesByNamesSubset(t *testing.T) {
+	s := testStruct{Alpha: 7, Beta: "seven"}
+	var want = []any{"seven", 7}
+	var got = GetFieldValuesByNames(s, []string{"Beta", "Alpha"})
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldValuesByNames() = %v, want %v", got, want)
+	}
+}
+
+func TestGetFieldValuesByNamesMissing(t *testing.T) {
+	s := testStruct{Alpha: 1}
+	var want = []any{1, ""}
+	var got = GetFieldValuesByNames(s, []string{"Alpha", "Missing", "Epsilon"})
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldValuesByNames() = %v, want %v", got, want)
+	}
+}
+
+func TestGetFieldValuesByNamesNoneFound(t *testing.T) {
+	s := testStruct{Alpha: 1}
+	var got = GetFieldValuesByNames(s, []string{"Missing"})
+	if got != nil {
+		t.Fatalf("GetFieldValuesByNames() = %v, want nil", got)
+	}
+}
+
 func TestGetFieldNamesByTag(t *testing.T) {
 	var want = []string{"Alpha"}
 	var got = GetFieldNamesByTag[testStruct]("json", "alpha")
