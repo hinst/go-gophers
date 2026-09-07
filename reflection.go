@@ -12,6 +12,21 @@ func GetFieldNames[T any]() []string {
 	return names
 }
 
+// Get values of fields with the supplied names in the supplied struct
+func GetFieldValuesByNames[T any](s T, names []string) []any {
+	var theType = reflect.TypeOf(s)
+	var values []any
+	val := reflect.ValueOf(s)
+	for _, name := range names {
+		field, ok := theType.FieldByName(name)
+		if !ok {
+			continue
+		}
+		values = append(values, val.FieldByIndex(field.Index).Interface())
+	}
+	return values
+}
+
 // Get names of fields in the supplied struct type marked with tagName:"tagValue"
 func GetFieldNamesByTag[T any](tagName, tagValue string) []string {
 	var theType = reflect.TypeFor[T]()
