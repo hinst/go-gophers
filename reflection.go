@@ -1,9 +1,13 @@
 package gophers
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 )
+
+// ErrFieldNotFound is returned when a requested field does not exist in the struct
+var ErrFieldNotFound = errors.New("Fields not found")
 
 // Get names of all fields in the supplied struct type
 func GetFieldNames[T any]() []string {
@@ -32,7 +36,7 @@ func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
 		}
 	}
 	if len(missingFields) > 0 {
-		e = fmt.Errorf("Fields not found: %v", missingFields)
+		e = fmt.Errorf("%w: %v", ErrFieldNotFound, missingFields)
 	}
 	return values, e
 }
