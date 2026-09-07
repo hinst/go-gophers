@@ -11,3 +11,16 @@ func GetFieldNames[T any]() []string {
 	}
 	return names
 }
+
+// Get names of fields in the supplied struct type marked with tagName:"tagValue"
+func GetFieldsByTag[T any](tagName, tagValue string) []string {
+	var theType = reflect.TypeFor[T]()
+	var names []string
+	for field := range theType.Fields() {
+		var field = field
+		if field.Tag.Get(tagName) == tagValue {
+			names = append(names, field.Name)
+		}
+	}
+	return names
+}
