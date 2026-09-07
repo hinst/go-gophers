@@ -23,6 +23,14 @@ func TestGetFieldNames(t *testing.T) {
 	}
 }
 
+func TestGetFieldNamesPointer(t *testing.T) {
+	var want = []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"}
+	var got = GetFieldNames[*testStruct]()
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldNames() = %v, want %v", got, want)
+	}
+}
+
 func TestGetFieldValuesByNamesAll(t *testing.T) {
 	var s = testStruct{
 		Alpha:   1,
@@ -45,6 +53,18 @@ func TestGetFieldValuesByNamesSubset(t *testing.T) {
 	var s = testStruct{Alpha: 7, Beta: "seven"}
 	var want = []any{"seven", 7}
 	var got, err = GetFieldValuesByNames(s, []string{"Beta", "Alpha"})
+	if err != nil {
+		t.Fatalf("GetFieldValuesByNames() returned error: %v", err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldValuesByNames() = %v, want %v", got, want)
+	}
+}
+
+func TestGetFieldValuesByNamesPointer(t *testing.T) {
+	var s = &testStruct{Alpha: 1, Beta: "two", Gamma: 3.5, Delta: []byte{4, 5, 6}, Epsilon: "five"}
+	var want = []any{1, "two", 3.5, []byte{4, 5, 6}, "five"}
+	var got, err = GetFieldValuesByNames(s, []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"})
 	if err != nil {
 		t.Fatalf("GetFieldValuesByNames() returned error: %v", err)
 	}
@@ -94,6 +114,14 @@ func TestGetFieldNamesByTag(t *testing.T) {
 func TestGetFieldNamesByTagMultiple(t *testing.T) {
 	var want = []string{"Alpha", "Beta"}
 	var got = GetFieldNamesByTag[testStruct]("validate", "required")
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldNamesByTag(%q, %q) = %v, want %v", "validate", "required", got, want)
+	}
+}
+
+func TestGetFieldNamesByTagPointerType(t *testing.T) {
+	var want = []string{"Alpha", "Beta"}
+	var got = GetFieldNamesByTag[*testStruct]("validate", "required")
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("GetFieldNamesByTag(%q, %q) = %v, want %v", "validate", "required", got, want)
 	}
