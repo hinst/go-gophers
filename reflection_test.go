@@ -22,38 +22,25 @@ func TestGetFieldNames(t *testing.T) {
 }
 
 func TestGetFieldNamesByTag(t *testing.T) {
-	type testCase struct {
-		name     string
-		tagName  string
-		tagValue string
-		want     []string
+	var want = []string{"Alpha"}
+	var got = GetFieldNamesByTag[testStruct]("json", "alpha")
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldNamesByTag(%q, %q) = %v, want %v", "json", "alpha", got, want)
 	}
-	var cases = []testCase{
-		{
-			name:     "json tag with value",
-			tagName:  "json",
-			tagValue: "alpha",
-			want:     []string{"Alpha"},
-		},
-		{
-			name:     "multiple fields with same tag value",
-			tagName:  "validate",
-			tagValue: "required",
-			want:     []string{"Alpha", "Beta"},
-		},
-		{
-			name:     "no match returns nil",
-			tagName:  "json",
-			tagValue: "missing",
-			want:     nil,
-		},
+}
+
+func TestGetFieldNamesByTagMultiple(t *testing.T) {
+	var want = []string{"Alpha", "Beta"}
+	var got = GetFieldNamesByTag[testStruct]("validate", "required")
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldNamesByTag(%q, %q) = %v, want %v", "validate", "required", got, want)
 	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			var got = GetFieldNamesByTag[testStruct](tc.tagName, tc.tagValue)
-			if !reflect.DeepEqual(got, tc.want) {
-				t.Fatalf("GetFieldsByTag(%q, %q) = %v, want %v", tc.tagName, tc.tagValue, got, tc.want)
-			}
-		})
+}
+
+func TestGetFieldNamesByTagNoMatch(t *testing.T) {
+	var want = []string(nil)
+	var got = GetFieldNamesByTag[testStruct]("json", "missing")
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetFieldNamesByTag(%q, %q) = %v, want %v", "json", "missing", got, want)
 	}
 }
