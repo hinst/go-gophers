@@ -1,7 +1,9 @@
 package gophers
 
 import (
+	"errors"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -30,7 +32,10 @@ func TestGetFieldValuesByNames(t *testing.T) {
 		Epsilon: "five",
 	}
 	var want = []any{1, "two", 3.5, []byte{4, 5, 6}, "five"}
-	var got = GetFieldValuesByNames(s, []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"})
+	got, err := GetFieldValuesByNames(s, []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"})
+	if err != nil {
+		t.Fatalf("GetFieldValuesByNames() returned error: %v", err)
+	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("GetFieldValuesByNames() = %v, want %v", got, want)
 	}
@@ -39,7 +44,10 @@ func TestGetFieldValuesByNames(t *testing.T) {
 func TestGetFieldValuesByNamesSubset(t *testing.T) {
 	s := testStruct{Alpha: 7, Beta: "seven"}
 	var want = []any{"seven", 7}
-	var got = GetFieldValuesByNames(s, []string{"Beta", "Alpha"})
+	got, err := GetFieldValuesByNames(s, []string{"Beta", "Alpha"})
+	if err != nil {
+		t.Fatalf("GetFieldValuesByNames() returned error: %v", err)
+	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("GetFieldValuesByNames() = %v, want %v", got, want)
 	}
@@ -47,18 +55,29 @@ func TestGetFieldValuesByNamesSubset(t *testing.T) {
 
 func TestGetFieldValuesByNamesMissing(t *testing.T) {
 	s := testStruct{Alpha: 1}
-	var want = []any{1, ""}
-	var got = GetFieldValuesByNames(s, []string{"Alpha", "Missing", "Epsilon"})
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("GetFieldValuesByNames() = %v, want %v", got, want)
+	got, err := GetFieldValuesByNames(s, []string{"Alpha", "Missing", "Epsilon"})
+	if err == nil {
+		t.Fatalf("GetFieldValuesByNames() = %v, want error for missing field", got)
+	}
+	if !errors.Is(err, ErrFieldNotFound) {
+		t.Fatalf("GetFieldValuesByNames() error = %v, want %v", err, ErrFieldNotFound)
+	}
+	if !strings.Contains(err.Error(), "Missing") {
+		t.Fatalf("GetFieldValuesByNames() error = %q, want it to mention field %q", err, "Missing")
+	}
+	if got != nil {
+		t.Fatalf("GetFieldValuesByNames() = %v, want nil values", got)
 	}
 }
 
 func TestGetFieldValuesByNamesNoneFound(t *testing.T) {
 	s := testStruct{Alpha: 1}
-	var got = GetFieldValuesByNames(s, []string{"Missing"})
+	got, err := GetFieldValuesByNames(s, []string{"Missing"})
+	if err == nil {
+		t.Fatalf("GetFieldValuesByNames() = %v, want error for missing field", got)
+	}
 	if got != nil {
-		t.Fatalf("GetFieldValuesByNames() = %v, want nil", got)
+		t.Fatalf("GetFieldValuesByNames() = %v, want nil values", got)
 	}
 }
 

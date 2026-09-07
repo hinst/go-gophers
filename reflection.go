@@ -1,6 +1,13 @@
 package gophers
 
-import "reflect"
+import (
+	"errors"
+	"fmt"
+	"reflect"
+)
+
+// ErrFieldNotFound is returned by GetFieldValuesByNames when a requested field does not exist
+var ErrFieldNotFound = errors.New("field not found")
 
 // Get names of all fields in the supplied struct type
 func GetFieldNames[T any]() []string {
@@ -13,18 +20,19 @@ func GetFieldNames[T any]() []string {
 }
 
 // Get values of fields with the supplied names in the supplied struct
-func GetFieldValuesByNames[T any](s T, names []string) []any {
+// Returns an error if any of the supplied names is not a field of the struct
+func GetFieldValuesByNames[T any](s T, names []string) ([]any, error) {
 	var theType = reflect.TypeOf(s)
 	var values []any
 	val := reflect.ValueOf(s)
 	for _, name := range names {
 		field, ok := theType.FieldByName(name)
 		if !ok {
-			continue
+			return nil, fmt.Errorf("%w: %q", ErrFieldNotFound, name)
 		}
 		values = append(values, val.FieldByIndex(field.Index).Interface())
 	}
-	return values
+	return values, nil
 }
 
 // Get names of fields in the supplied struct type marked with tagName:"tagValue"
