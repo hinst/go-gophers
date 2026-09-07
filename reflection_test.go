@@ -21,7 +21,7 @@ func TestGetFieldNames(t *testing.T) {
 	}
 }
 
-func TestGetFieldsByTag(t *testing.T) {
+func TestGetFieldNamesByTag(t *testing.T) {
 	type testCase struct {
 		name     string
 		tagName  string
@@ -50,7 +50,7 @@ func TestGetFieldsByTag(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var got = GetFieldsByTag[testStruct](tc.tagName, tc.tagValue)
+			var got = GetFieldNamesByTag[testStruct](tc.tagName, tc.tagValue)
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Fatalf("GetFieldsByTag(%q, %q) = %v, want %v", tc.tagName, tc.tagValue, got, tc.want)
 			}
