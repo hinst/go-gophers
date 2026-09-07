@@ -22,7 +22,7 @@ func TestGetFieldNames(t *testing.T) {
 }
 
 func TestGetFieldValuesByNamesAll(t *testing.T) {
-	s := testStruct{
+	var s = testStruct{
 		Alpha:   1,
 		Beta:    "two",
 		Gamma:   3.5,
@@ -30,7 +30,7 @@ func TestGetFieldValuesByNamesAll(t *testing.T) {
 		Epsilon: "five",
 	}
 	var want = []any{1, "two", 3.5, []byte{4, 5, 6}, "five"}
-	got, err := GetFieldValuesByNames(s, []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"})
+	var got, err = GetFieldValuesByNames(s, []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"})
 	if err != nil {
 		t.Fatalf("GetFieldValuesByNames() returned error: %v", err)
 	}
@@ -40,9 +40,9 @@ func TestGetFieldValuesByNamesAll(t *testing.T) {
 }
 
 func TestGetFieldValuesByNamesSubset(t *testing.T) {
-	s := testStruct{Alpha: 7, Beta: "seven"}
+	var s = testStruct{Alpha: 7, Beta: "seven"}
 	var want = []any{"seven", 7}
-	got, err := GetFieldValuesByNames(s, []string{"Beta", "Alpha"})
+	var got, err = GetFieldValuesByNames(s, []string{"Beta", "Alpha"})
 	if err != nil {
 		t.Fatalf("GetFieldValuesByNames() returned error: %v", err)
 	}
@@ -52,9 +52,9 @@ func TestGetFieldValuesByNamesSubset(t *testing.T) {
 }
 
 func TestGetFieldValuesByNamesMissing(t *testing.T) {
-	s := testStruct{Alpha: 1}
+	var s = testStruct{Alpha: 1}
 	var want = []any{1, nil, ""}
-	got, err := GetFieldValuesByNames(s, []string{"Alpha", "Missing", "Epsilon"})
+	var got, err = GetFieldValuesByNames(s, []string{"Alpha", "Missing", "Epsilon"})
 	if err == nil {
 		t.Fatalf("GetFieldValuesByNames() = %v, want error for missing field", got)
 	}
@@ -64,9 +64,9 @@ func TestGetFieldValuesByNamesMissing(t *testing.T) {
 }
 
 func TestGetFieldValuesByNamesNoneFound(t *testing.T) {
-	s := testStruct{Alpha: 1}
+	var s = testStruct{Alpha: 1}
 	var want = []any{nil}
-	got, err := GetFieldValuesByNames(s, []string{"Missing"})
+	var got, err = GetFieldValuesByNames(s, []string{"Missing"})
 	if err == nil {
 		t.Fatalf("GetFieldValuesByNames() = %v, want error for missing field", got)
 	}
