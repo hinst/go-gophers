@@ -51,19 +51,7 @@ func (me WebRetry) isNetworkError(err error) bool {
 func (me WebRetry) Run(client *http.Client, request *http.Request) (*http.Response, error) {
 	var latestError error
 	for attempt := 0; attempt < me.GetAttemptLimit(); attempt++ {
-		// A request body is consumed after an attempt. On retry, restore it from
-		// the original request via GetBody, or give up if it cannot be restored.
-		if attempt > 0 && request.Body != nil {
-			if request.GetBody == nil {
-				return nil, latestError
-			}
-			var body, bodyError = request.GetBody()
-			if bodyError != nil {
-				return nil, bodyError
-			}
-			request.Body = body
-		}
-		response, currentError := client.Do(request)
+		var response, currentError = client.Do(request)
 		if currentError == nil {
 			return response, nil
 		}
@@ -73,10 +61,25 @@ func (me WebRetry) Run(client *http.Client, request *http.Request) (*http.Respon
 		}
 		var isLastAttempt = attempt == me.GetAttemptLimit()-1
 		if !isLastAttempt {
+			var restoreBodyError = me.restoreBody(request)
+			if restoreBodyError != nil {
+				return nil, restoreBodyError
+			}
 			time.Sleep(me.GetCurrentDelay(attempt))
 		}
 	}
 	return nil, latestError
+}
+
+func (WebRetry) restoreBody(request *http.Request) (e error) {
+	if request.Body != nil {
+		if request.GetBody != nil {
+			request.Body, e = request.GetBody()
+		} else {
+			e = errors.New("cannot restore body for HTTP request because function GetBody is nil")
+		}
+	}
+	return
 }
 
 func (me WebRetry) GetCurrentDelay(attempt int) time.Duration {
