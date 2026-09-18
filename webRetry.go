@@ -1,0 +1,77 @@
+package gophers
+
+import (
+	"errors"
+	"net"
+	"net/http"
+	"time"
+)
+
+type WebRetry struct {
+	AttemptLimit int
+	Delay        time.Duration
+}
+
+func (me WebRetry) isNetworkError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var netErr net.Error
+	return errors.As(err, &netErr)
+}
+
+func (me WebRetry) Run(client *http.Client, request *http.Request) (*http.Response, error) {
+	var latestError error
+	for attempt := 0; attempt < me.GetAttemptLimit(); attempt++ {
+		var response, currentError = client.Do(request)
+		if currentError == nil {
+			return response, nil
+		}
+		latestError = currentError
+		if !me.isNetworkError(currentError) {
+			break
+		}
+		var isLastAttempt = attempt == me.GetAttemptLimit()-1
+		if !isLastAttempt {
+			var restoreBodyError = me.restoreBody(request)
+			if restoreBodyError != nil {
+				return nil, restoreBodyError
+			}
+			time.Sleep(me.GetCurrentDelay(attempt))
+		}
+	}
+	return nil, latestError
+}
+
+func (WebRetry) restoreBody(request *http.Request) (e error) {
+	if request.Body != nil {
+		if request.GetBody != nil {
+			request.Body, e = request.GetBody()
+		} else {
+			e = errors.New("cannot restore body for HTTP request because function GetBody is nil")
+		}
+	}
+	return
+}
+
+func (me WebRetry) GetCurrentDelay(attempt int) time.Duration {
+	var delay = me.GetDelay()
+	for range attempt {
+		delay *= 2
+	}
+	return delay
+}
+
+func (me WebRetry) GetDelay() time.Duration {
+	if me.Delay > 0 {
+		return me.Delay
+	}
+	return 2 * time.Second
+}
+
+func (me WebRetry) GetAttemptLimit() int {
+	if me.AttemptLimit > 0 {
+		return me.AttemptLimit
+	}
+	return 4
+}
