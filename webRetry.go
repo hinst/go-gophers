@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+type RequestFactory func() (*http.Request, error)
+
 type WebRetry struct {
 	AttemptLimit int
 	Delay        time.Duration
@@ -20,9 +22,13 @@ func (me WebRetry) isNetworkError(err error) bool {
 	return errors.As(err, &netErr)
 }
 
-func (me WebRetry) Run(client *http.Client, request *http.Request) (*http.Response, error) {
+func (me WebRetry) Run(client *http.Client, requestFactory RequestFactory) (*http.Response, error) {
 	var latestError error
 	for attempt := 0; attempt < me.GetAttemptLimit(); attempt++ {
+		var request, factoryError = requestFactory()
+		if factoryError != nil {
+			return nil, factoryError
+		}
 		var response, currentError = client.Do(request)
 		if currentError == nil {
 			return response, nil
@@ -33,25 +39,10 @@ func (me WebRetry) Run(client *http.Client, request *http.Request) (*http.Respon
 		}
 		var isLastAttempt = attempt == me.GetAttemptLimit()-1
 		if !isLastAttempt {
-			var restoreBodyError = me.restoreBody(request)
-			if restoreBodyError != nil {
-				return nil, restoreBodyError
-			}
 			time.Sleep(me.GetCurrentDelay(attempt))
 		}
 	}
 	return nil, latestError
-}
-
-func (WebRetry) restoreBody(request *http.Request) (e error) {
-	if request.Body != nil {
-		if request.GetBody != nil {
-			request.Body, e = request.GetBody()
-		} else {
-			e = errors.New("cannot restore body for HTTP request because function GetBody is nil")
-		}
-	}
-	return
 }
 
 func (me WebRetry) GetCurrentDelay(attempt int) time.Duration {
