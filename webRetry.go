@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-type RequestFactory func() (*http.Request, error)
-
 type WebRetry struct {
 	AttemptLimit int
 	Delay        time.Duration
 }
+
+const webRetryDefaultAttemptLimit = 4
 
 func (me WebRetry) isNetworkError(err error) bool {
 	if err == nil {
@@ -25,10 +25,7 @@ func (me WebRetry) isNetworkError(err error) bool {
 func (me WebRetry) Run(client *http.Client, requestFactory RequestFactory) (*http.Response, error) {
 	var latestError error
 	for attempt := 0; attempt < me.GetAttemptLimit(); attempt++ {
-		var request, factoryError = requestFactory()
-		if factoryError != nil {
-			return nil, factoryError
-		}
+		var request = requestFactory()
 		var response, currentError = client.Do(request)
 		if currentError == nil {
 			return response, nil
@@ -64,5 +61,5 @@ func (me WebRetry) GetAttemptLimit() int {
 	if me.AttemptLimit > 0 {
 		return me.AttemptLimit
 	}
-	return 4
+	return webRetryDefaultAttemptLimit
 }
