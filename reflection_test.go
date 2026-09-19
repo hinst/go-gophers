@@ -31,6 +31,28 @@ func TestGetFieldNamesPointer(t *testing.T) {
 	}
 }
 
+func TestGetFieldValueByName(t *testing.T) {
+	var s = testStruct{Alpha: 1, Beta: "two"}
+	var got, err = GetFieldValueByName(s, "Beta")
+	if err != nil {
+		t.Fatalf("GetFieldValueByName() returned error: %v", err)
+	}
+	if got != "two" {
+		t.Fatalf("GetFieldValueByName() = %v, want %q", got, "two")
+	}
+}
+
+func TestGetFieldValueByNameMissing(t *testing.T) {
+	var s = testStruct{Alpha: 1}
+	var got, err = GetFieldValueByName(s, "Missing")
+	if !errors.Is(err, ErrFieldNotFound) {
+		t.Fatalf("GetFieldValueByName() error = %v, want ErrFieldNotFound", err)
+	}
+	if got != nil {
+		t.Fatalf("GetFieldValueByName() value = %v, want nil", got)
+	}
+}
+
 func TestGetFieldValuesByNamesAll(t *testing.T) {
 	var s = testStruct{
 		Alpha:   1,
