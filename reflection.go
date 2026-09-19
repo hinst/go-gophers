@@ -6,8 +6,10 @@ import (
 	"reflect"
 )
 
-// ErrFieldNotFound is returned when a requested field does not exist in the struct
+// The requested field does not exist in the struct
 var ErrFieldNotFound = errors.New("Fields not found")
+// The requested field is private, therefore we cannot read its value
+var ErrFieldNotExported = errors.New("Field not exported")
 
 func unwrapPointerType(theType reflect.Type) reflect.Type {
 	for theType.Kind() == reflect.Pointer {
@@ -37,6 +39,9 @@ func GetFieldValueByName[T any](s T, name string) (value any, e error) {
 	field, ok := theType.FieldByName(name)
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", ErrFieldNotFound, name)
+	}
+	if !field.IsExported() {
+		return nil, fmt.Errorf("%w: %s", ErrFieldNotExported, name)
 	}
 	return val.FieldByIndex(field.Index).Interface(), nil
 }
