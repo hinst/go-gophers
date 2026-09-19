@@ -63,7 +63,7 @@ func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
 		}
 	}
 	if len(errorCount) > 0 {
-		e = fmt.Errorf("%v of %v fields cannot be retrieved", errorCount, len(names))
+		e = fmt.Errorf("%v of %v fields cannot be retrieved, last error: %w", errorCount, len(names), ErrFieldNotFound)
 	}
 	return values, e
 }
