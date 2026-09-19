@@ -8,6 +8,7 @@ import (
 
 // The requested field does not exist in the struct
 var ErrFieldNotFound = errors.New("Fields not found")
+
 // The requested field is private, therefore we cannot read its value
 var ErrFieldNotExported = errors.New("Field not exported")
 
@@ -46,22 +47,23 @@ func GetFieldValueByName[T any](s T, name string) (value any, e error) {
 	return val.FieldByIndex(field.Index).Interface(), nil
 }
 
-// Get values of fields with the supplied names in the supplied struct
-// Returns an error if any of the supplied names is not a field of the struct;
-// values for missing fields are returned as nil
+// Get values of fields with the supplied names.
+// Returns error if some of the fields cannot be retrieved.
+// Fields that could not be retrieved are returned as nil elements in the output array
 func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
-	var missingFields []string
+	var errorCount []string
 	for _, name := range names {
-		value, err := GetFieldValueByName(s, name)
-		if err != nil {
+		var value any
+		value, e = GetFieldValueByName(s, name)
+		if e != nil {
 			values = append(values, nil)
-			missingFields = append(missingFields, name)
+			errorCount = append(errorCount, name)
 		} else {
 			values = append(values, value)
 		}
 	}
-	if len(missingFields) > 0 {
-		e = fmt.Errorf("%w: %v", ErrFieldNotFound, missingFields)
+	if len(errorCount) > 0 {
+		e = fmt.Errorf("%v of %v fields cannot be retrieved", errorCount, len(names))
 	}
 	return values, e
 }
