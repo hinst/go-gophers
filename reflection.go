@@ -26,23 +26,33 @@ func GetFieldNames[T any]() []string {
 	return names
 }
 
-// Get values of fields with the supplied names in the supplied struct
-// Returns an error if any of the supplied names is not a field of the struct;
-// values for missing fields are returned as nil
-func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
+// Get the value of the field with the supplied name in the supplied struct
+// Returns an error if the supplied name is not a field of the struct
+func GetFieldValueByName[T any](s T, name string) (value any, e error) {
 	var theType = unwrapPointerType(reflect.TypeOf(s))
 	var val = reflect.ValueOf(s)
 	for val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}
+	field, ok := theType.FieldByName(name)
+	if !ok {
+		return nil, fmt.Errorf("%w: %s", ErrFieldNotFound, name)
+	}
+	return val.FieldByIndex(field.Index).Interface(), nil
+}
+
+// Get values of fields with the supplied names in the supplied struct
+// Returns an error if any of the supplied names is not a field of the struct;
+// values for missing fields are returned as nil
+func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
 	var missingFields []string
 	for _, name := range names {
-		field, ok := theType.FieldByName(name)
-		if ok {
-			values = append(values, val.FieldByIndex(field.Index).Interface())
-		} else {
+		value, err := GetFieldValueByName(s, name)
+		if err != nil {
 			values = append(values, nil)
 			missingFields = append(missingFields, name)
+		} else {
+			values = append(values, value)
 		}
 	}
 	if len(missingFields) > 0 {
