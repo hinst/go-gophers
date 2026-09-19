@@ -7,10 +7,10 @@ import (
 )
 
 // The requested field does not exist in the struct
-var ErrFieldNotFound = errors.New("Fields not found")
+var ErrorFieldNotFound = errors.New("Fields not found")
 
 // The requested field is private, therefore we cannot read its value
-var ErrFieldNotExported = errors.New("Field not exported")
+var ErrorFieldNotExported = errors.New("Field not exported")
 
 func unwrapPointerType(theType reflect.Type) reflect.Type {
 	for theType.Kind() == reflect.Pointer {
@@ -31,7 +31,7 @@ func GetFieldNames[T any]() []string {
 
 // Get the value of the field with the supplied name in the supplied struct
 // Returns an error if the supplied name is not a field of the struct
-func GetFieldValueByName[T any](s T, name string) (value any, e error) {
+func GetFieldValueByName[T any](s T, name string) (value any, exception error) {
 	var theType = unwrapPointerType(reflect.TypeOf(s))
 	var val = reflect.ValueOf(s)
 	for val.Kind() == reflect.Pointer {
@@ -39,10 +39,10 @@ func GetFieldValueByName[T any](s T, name string) (value any, e error) {
 	}
 	field, ok := theType.FieldByName(name)
 	if !ok {
-		return nil, fmt.Errorf("%w: %s", ErrFieldNotFound, name)
+		return nil, fmt.Errorf("%w: %s", ErrorFieldNotFound, name)
 	}
 	if !field.IsExported() {
-		return nil, fmt.Errorf("%w: %s", ErrFieldNotExported, name)
+		return nil, fmt.Errorf("%w: %s", ErrorFieldNotExported, name)
 	}
 	return val.FieldByIndex(field.Index).Interface(), nil
 }
@@ -50,22 +50,23 @@ func GetFieldValueByName[T any](s T, name string) (value any, e error) {
 // Get values of fields with the supplied names.
 // Returns error if some of the fields cannot be retrieved.
 // Fields that could not be retrieved are returned as nil elements in the output array
-func GetFieldValuesByNames[T any](s T, names []string) (values []any, e error) {
-	var errorCount []string
+func GetFieldValuesByNames[T any](s T, names []string) (values []any, exception error) {
+	var errorCount int
 	for _, name := range names {
-		var value any
-		value, e = GetFieldValueByName(s, name)
-		if e != nil {
+		var value, fieldError = GetFieldValueByName(s, name)
+		if fieldError != nil {
 			values = append(values, nil)
-			errorCount = append(errorCount, name)
+			errorCount++
+			exception = fieldError
 		} else {
 			values = append(values, value)
 		}
 	}
-	if len(errorCount) > 0 {
-		e = fmt.Errorf("%v of %v fields cannot be retrieved, last error: %w", errorCount, len(names), ErrFieldNotFound)
+	if errorCount > 0 {
+		exception = fmt.Errorf("%v of %v fields cannot be retrieved, last error: %w",
+			errorCount, len(names), exception)
 	}
-	return values, e
+	return values, exception
 }
 
 // Get names of fields in the supplied struct type marked with tagName:"tagValue"

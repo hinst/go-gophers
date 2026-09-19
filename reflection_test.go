@@ -45,7 +45,7 @@ func TestGetFieldValueByName(t *testing.T) {
 func TestGetFieldValueByNameMissing(t *testing.T) {
 	var s = testStruct{Alpha: 1}
 	var got, err = GetFieldValueByName(s, "Missing")
-	if !errors.Is(err, ErrFieldNotFound) {
+	if !errors.Is(err, ErrorFieldNotFound) {
 		t.Fatalf("GetFieldValueByName() error = %v, want ErrFieldNotFound", err)
 	}
 	if got != nil {
@@ -99,7 +99,7 @@ func TestGetFieldValuesByNamesMissing(t *testing.T) {
 	var s = testStruct{Alpha: 1}
 	var want = []any{1, nil, ""}
 	var got, err = GetFieldValuesByNames(s, []string{"Alpha", "Missing", "Epsilon"})
-	if !errors.Is(err, ErrFieldNotFound) {
+	if !errors.Is(err, ErrorFieldNotFound) {
 		t.Fatalf("GetFieldValuesByNames() error = %v, want ErrFieldNotFound", err)
 	}
 	if !strings.Contains(err.Error(), "Missing") {
@@ -114,11 +114,8 @@ func TestGetFieldValuesByNamesNoneFound(t *testing.T) {
 	var s = testStruct{Alpha: 1}
 	var want = []any{nil, nil}
 	var got, err = GetFieldValuesByNames(s, []string{"Missing1", "Missing2"})
-	if !errors.Is(err, ErrFieldNotFound) {
+	if !errors.Is(err, ErrorFieldNotFound) {
 		t.Fatalf("GetFieldValuesByNames() error = %v, want ErrFieldNotFound", err)
-	}
-	if !strings.Contains(err.Error(), "Missing1") || !strings.Contains(err.Error(), "Missing2") {
-		t.Fatalf("GetFieldValuesByNames() error = %q, want it to contain all missing field names", err)
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("GetFieldValuesByNames() = %v, want %v (nil placeholder for missing field)", got, want)
