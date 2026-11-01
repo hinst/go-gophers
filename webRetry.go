@@ -13,6 +13,7 @@ type WebRetry struct {
 }
 
 const webRetryDefaultAttemptLimit = 4
+const webRetryDefaultInitialDelay = 2 * time.Second
 
 func (me WebRetry) isNetworkError(err error) bool {
 	if err == nil {
@@ -54,7 +55,7 @@ func (me WebRetry) GetDelay() time.Duration {
 	if me.Delay > 0 {
 		return me.Delay
 	}
-	return 2 * time.Second
+	return webRetryDefaultInitialDelay
 }
 
 func (me WebRetry) GetAttemptLimit() int {
